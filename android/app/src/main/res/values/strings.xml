@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Block Stack</string>
+    <string name="title_activity_main">Block Stack</string>
+    <string name="package_name">com.blockstack.app</string>
+    <string name="custom_url_scheme">com.blockstack.app</string>
+</resources>
