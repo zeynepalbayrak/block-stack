@@ -1,0 +1,10 @@
+{
+  "appId": "com.blockstack.app",
+  "appName": "Block Stack",
+  "webDir": ".",
+  "plugins": {
+    "AdMob": {
+      "appId": "ca-app-pub-6512468206139061~6649765876"
+    }
+  }
+}

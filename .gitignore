@@ -1,0 +1,20 @@
+# macOS
+.DS_Store
+
+# Claude
+.claude/
+
+# Node / Capacitor
+node_modules/
+package-lock.json
+dist/
+www/
+
+# Capacitor native projects (generated)
+android/
+ios/
+
+# Logs & env
+*.log
+.env
+.env.local
