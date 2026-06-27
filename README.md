@@ -20,6 +20,9 @@ Requires Xcode (iOS) and/or Android Studio (Android) installed.
 npm run cap:add:ios
 npm run cap:add:android
 
+# Generate icons + splash from assets/ (see assets/README.md)
+npm run assets:generate
+
 # After any change to www/
 npm run cap:sync
 

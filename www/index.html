@@ -345,8 +345,21 @@ cv.addEventListener('touchstart',e=>{e.preventDefault();if(state==='play')drop()
 document.addEventListener('keydown',e=>{if(e.code==='Space'&&state==='play'){e.preventDefault();drop();}});
 window.matchMedia('(prefers-color-scheme:dark)').addEventListener('change',()=>{if(state!=='play')draw();});
 
-// AdMob'u başlat (Capacitor yüklüyse)
-AdMob.init();
+// Native bridge — StatusBar + SplashScreen + AdMob (Capacitor yüklüyse)
+(async () => {
+  const Plugins = window.Capacitor?.Plugins;
+  if (Plugins?.StatusBar) {
+    try {
+      const dark = window.matchMedia('(prefers-color-scheme:dark)').matches;
+      await Plugins.StatusBar.setStyle({ style: dark ? 'DARK' : 'LIGHT' });
+      await Plugins.StatusBar.setBackgroundColor({ color: dark ? '#080514' : '#F0EDE8' });
+    } catch(e) { console.warn('StatusBar:', e); }
+  }
+  AdMob.init();
+  if (Plugins?.SplashScreen) {
+    try { await Plugins.SplashScreen.hide(); } catch(e) {}
+  }
+})();
 draw();
 </script>
 </body>

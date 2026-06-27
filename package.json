@@ -6,6 +6,7 @@
   "scripts": {
     "serve": "npx http-server www -p 8080 -o",
     "cap:sync": "npx cap sync",
+    "assets:generate": "npx @capacitor/assets generate --assetPath assets",
     "cap:add:ios": "npx cap add ios",
     "cap:add:android": "npx cap add android",
     "cap:open:ios": "npx cap open ios",
