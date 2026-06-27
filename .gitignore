@@ -4,17 +4,28 @@
 # Claude
 .claude/
 
-# Node / Capacitor
+# Node
 node_modules/
-package-lock.json
-dist/
-www/
-
-# Capacitor native projects (generated)
-android/
-ios/
 
 # Logs & env
 *.log
 .env
 .env.local
+
+# Capacitor build artifacts (native projects themselves are committed)
+# iOS
+ios/App/Pods/
+ios/App/build/
+ios/App/output/
+ios/App/Podfile.lock
+ios/DerivedData/
+
+# Android
+android/.gradle/
+android/build/
+android/app/build/
+android/captures/
+android/local.properties
+android/.idea/
+android/app/release/
+*.keystore
