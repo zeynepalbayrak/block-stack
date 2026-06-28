@@ -97,9 +97,8 @@ const _IS_IOS = (typeof window!=='undefined' && window.Capacitor?.getPlatform?.(
 const ADMOB_CONFIG = _IS_IOS ? {
   // GERÇEK iOS ad unit'leri (AdMob → iOS app → Ad units)
   bannerAdUnitId:       'ca-app-pub-6512468206139061/2231475880',
-  // Aşağıdaki ikisi henüz Google TEST — iOS interstitial + rewarded oluşturup yapıştırınca güncelle
-  interstitialAdUnitId: 'ca-app-pub-3940256099942544/4411468910',
-  rewardedAdUnitId:     'ca-app-pub-3940256099942544/1712485313',
+  interstitialAdUnitId: 'ca-app-pub-6512468206139061/8605312546',
+  rewardedAdUnitId:     'ca-app-pub-6512468206139061/4264979372',
 } : {
   // Android (mevcut — kullanıyorsan ileride iOS gibi platform-specific yap)
   bannerAdUnitId:       'ca-app-pub-6512468206139061/8805155929',
