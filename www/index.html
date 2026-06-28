@@ -47,7 +47,6 @@ body{background:#080514}
   <div id="comboEl"></div>
   <div id="burstEl">
     <div id="burstTitle">3 IN A ROW!</div>
-    <div id="burstSub">BLOKLAR BÜYÜDÜ</div>
   </div>
   <div id="ov" class="intro">
     <div class="ov-label" id="ovLabel">BLOCK STACK</div>
@@ -189,7 +188,8 @@ function playFiveRow(){beep(523,'sine',0.1,0.2,0);beep(659,'sine',0.1,0.2,0.1);b
 function playGameOver(){beep(300,'sawtooth',0.15,0.15,0);beep(200,'sawtooth',0.2,0.12,0.15);beep(120,'sawtooth',0.3,0.1,0.3);}
 
 /* ── OYUN DEĞİŞKENLERİ ──────────────────────────────── */
-const PERFECT_PX=5,FIVEROW_N=3,FIVEROW_GROW=0.12;
+const PERFECT_PX=5,FIVEROW_N=3,FIVEROW_GROW=0.20;
+let glowTimer=0;
 let W=360,H=600,BASE_BH=28,START_W=224;
 const cv=document.getElementById('gc'),ctx=cv.getContext('2d');
 
@@ -275,8 +275,10 @@ function showNotif(msg,color,dur){
 
 function growBlocks(){
   const newH=Math.round(blockH*(1+FIVEROW_GROW)),diff=newH-blockH;
+  // Bottom block stays in place visually, top of stack grows downward (blocks get taller in place)
   for(let i=0;i<blocks.length;i++){blocks[i].h=newH;blocks[i].y-=diff*(blocks.length-1-i);}
-  tCamY+=diff*(blocks.length-1);blockH=newH;
+  blockH=newH;
+  glowTimer=30; // ~500ms parlama
 }
 
 function drop(){
@@ -291,6 +293,8 @@ function drop(){
     spawnParticles(nx,mv.y+Math.round(camY),nw,getPalette(mv.pi)[1],10);
     if(perfectStreak>=FIVEROW_N&&perfectStreak%FIVEROW_N===0){
       growBlocks();spawnBurstParticles();burstTimer=90;
+      // blockH yeni değere geldi — bu drop'tan çıkacak yeni blok yeni yüksekliğe göre hizalansın
+      mv.y=blocks[blocks.length-1].y-blockH;
       document.getElementById('burstEl').style.opacity='1';
       setTimeout(()=>document.getElementById('burstEl').style.opacity='0',1200);
       playFiveRow();
@@ -305,7 +309,11 @@ function drop(){
   blocks.push({x:nx,y:mv.y,w:nw,h:blockH,pi:mv.pi});
   score++;
   document.getElementById('scoreEl').textContent=score;
-  tCamY+=blockH;spawnMv();
+  spawnMv();
+  // Kamera: aktif blok ekranın H*0.4 seviyesinden yukarı çıkacaksa kaydır,
+  // değilse kule görsel olarak yukarı doğru büyür.
+  const targetY=H*0.4;
+  if(mv.y+tCamY<targetY) tCamY=targetY-mv.y;
 }
 
 /* Oyun bitince önce reklam, sonra game over ekranı */
@@ -341,7 +349,7 @@ function showGameOver(){
 /* ── RENDER ─────────────────────────────────────────── */
 function getBg(){return isDark()?{top:'#080514',bot:'#0E0A20',grid:'rgba(255,255,255,0.025)',floor:'rgba(8,5,20,0.55)'}:{top:'#F5F2ED',bot:'#E8E4DC',grid:'rgba(0,0,0,0.04)',floor:'rgba(240,237,232,0.65)'};}
 function drawBg(){const{top,bot,grid}=getBg(),g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,top);g.addColorStop(1,bot);ctx.fillStyle=g;ctx.fillRect(0,0,W,H);ctx.strokeStyle=grid;ctx.lineWidth=1;for(let x=0;x<W;x+=36){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}}
-function drawBlock(b,cy){const sy=b.y+cy;if(sy>H+b.h||sy<-b.h*3)return;const[dark,mid,light]=getPalette(b.pi);ctx.fillStyle=dark;ctx.beginPath();ctx.roundRect(b.x+1,sy+1,b.w-2,b.h-2,4);ctx.fill();ctx.fillStyle=mid;ctx.beginPath();ctx.roundRect(b.x+1,sy+1,b.w-2,Math.floor(b.h*0.45),4);ctx.fill();ctx.fillStyle=light;ctx.beginPath();ctx.roundRect(b.x+3,sy+3,Math.min(b.w-8,32),4,2);ctx.fill();ctx.fillStyle=isDark()?'rgba(255,255,255,0.06)':'rgba(0,0,0,0.06)';ctx.fillRect(b.x+1,sy+Math.floor(b.h*0.45),b.w-2,1);}
+function drawBlock(b,cy){const sy=b.y+cy;if(sy>H+b.h||sy<-b.h*3)return;const[dark,mid,light]=getPalette(b.pi);ctx.fillStyle=dark;ctx.beginPath();ctx.roundRect(b.x+1,sy+1,b.w-2,b.h-2,4);ctx.fill();ctx.fillStyle=mid;ctx.beginPath();ctx.roundRect(b.x+1,sy+1,b.w-2,Math.floor(b.h*0.45),4);ctx.fill();ctx.fillStyle=light;ctx.beginPath();ctx.roundRect(b.x+3,sy+3,Math.min(b.w-8,32),4,2);ctx.fill();ctx.fillStyle=isDark()?'rgba(255,255,255,0.06)':'rgba(0,0,0,0.06)';ctx.fillRect(b.x+1,sy+Math.floor(b.h*0.45),b.w-2,1);if(glowTimer>0){const a=glowTimer/30;ctx.fillStyle=`rgba(255,220,100,${a*0.55})`;ctx.beginPath();ctx.roundRect(b.x+1,sy+1,b.w-2,b.h-2,4);ctx.fill();ctx.strokeStyle=`rgba(255,200,60,${a})`;ctx.lineWidth=2;ctx.beginPath();ctx.roundRect(b.x+1,sy+1,b.w-2,b.h-2,4);ctx.stroke();}}
 function drawParticles(cy){particles.forEach(p=>{ctx.globalAlpha=p.a;ctx.fillStyle=p.color;ctx.beginPath();ctx.arc(p.x,p.y+cy,p.r,0,Math.PI*2);ctx.fill();});ctx.globalAlpha=1;}
 function drawBurst(){burstParticles.forEach(p=>{ctx.globalAlpha=p.a;ctx.fillStyle=p.color;ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fill();});ctx.globalAlpha=1;}
 function drawGuide(cy){if(!blocks.length)return;const last=blocks[blocks.length-1];ctx.strokeStyle=isDark()?'rgba(255,255,255,0.06)':'rgba(0,0,0,0.08)';ctx.setLineDash([3,5]);ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(last.x,last.y+cy);ctx.lineTo(last.x,0);ctx.stroke();ctx.beginPath();ctx.moveTo(last.x+last.w,last.y+cy);ctx.lineTo(last.x+last.w,0);ctx.stroke();ctx.setLineDash([]);}
@@ -352,6 +360,7 @@ function update(){
   if(mv){mv.x+=mv.dir*mv.spd;if(mv.x>W+12)mv.dir=-1;if(mv.x<-mv.w-12)mv.dir=1;}
   particles=particles.filter(p=>p.a>0.04);particles.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.vy+=0.13;p.a*=0.87;});
   if(burstTimer>0){burstTimer--;burstParticles=burstParticles.filter(p=>p.a>0.03);burstParticles.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.vy+=0.15;p.vx*=0.97;p.a*=0.94;});}
+  if(glowTimer>0)glowTimer--;
   if(notifTimer-->0)document.getElementById('notifEl').style.opacity=notifTimer>0?'1':'0';
   if(comboTimer-->0)document.getElementById('comboEl').style.opacity=comboTimer>0?'1':'0';
 }
