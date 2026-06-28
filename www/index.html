@@ -266,7 +266,7 @@ function spawnMv(){
   const last=blocks[blocks.length-1];
   const pi=score%PALETTES.length,dir=Math.random()<0.5?1:-1;
   const sc=W/360;
-  const spd=Math.min(4.2+score*0.09,10)*sc;
+  const spd=Math.min(3.2+score*0.08,8.5)*sc;
   mv={x:dir>0?-last.w:W,y:last.y-blockH,w:last.w,h:blockH,dir,spd,pi};
 }
 
