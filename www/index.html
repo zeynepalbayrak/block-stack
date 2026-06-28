@@ -278,24 +278,71 @@ function resize(){
   if(state!=='play'){blockH=BASE_BH;introStack();mv=null;draw();}
 }
 const PALETTES=[
-  {l:['#7B5EA7','#9B7EC8','#C4AEE8'],d:['#5B4FCF','#7B6FEF','#A99EF5']},
-  {l:['#1A8A92','#22B5C0','#7DD8DF'],d:['#1A8A92','#22B5C0','#6ED4DB']},
-  {l:['#C0392B','#E05544','#F0907A'],d:['#8B2222','#C03030','#E06060']},
-  {l:['#1E6B3A','#27924E','#6DC28A'],d:['#1A5E32','#22853E','#5CBB7C']},
-  {l:['#7A4800','#A86010','#D4943A'],d:['#8B4513','#B5601A','#D4843A']},
-  {l:['#2C4F8A','#3A6DB5','#7AAAD8'],d:['#2C5F8A','#3A7DB5','#72AADA']},
-  {l:['#7A2060','#A83080','#D470B0'],d:['#8B2272','#B530A0','#D870CC']},
-  {l:['#3A5A3A','#527553','#88AA88'],d:['#2E4A2E','#427043','#72A072']},
+  {l:['#7B5EA7','#9B7EC8','#C4AEE8'],d:['#5B4FCF','#7B6FEF','#A99EF5'],name:'Lavender'},
+  {l:['#1A8A92','#22B5C0','#7DD8DF'],d:['#1A8A92','#22B5C0','#6ED4DB'],name:'Teal'},
+  {l:['#C0392B','#E05544','#F0907A'],d:['#8B2222','#C03030','#E06060'],name:'Coral'},
+  {l:['#1E6B3A','#27924E','#6DC28A'],d:['#1A5E32','#22853E','#5CBB7C'],name:'Forest'},
+  {l:['#7A4800','#A86010','#D4943A'],d:['#8B4513','#B5601A','#D4843A'],name:'Bronze'},
+  {l:['#2C4F8A','#3A6DB5','#7AAAD8'],d:['#2C5F8A','#3A7DB5','#72AADA'],name:'Ocean'},
+  {l:['#7A2060','#A83080','#D470B0'],d:['#8B2272','#B530A0','#D870CC'],name:'Magenta'},
+  {l:['#3A5A3A','#527553','#88AA88'],d:['#2E4A2E','#427043','#72A072'],name:'Sage'},
+  // Kilit altı paletler — score milestone'larında açılır
+  {l:['#FF1493','#FF6BB5','#FFB3DC'],d:['#FF0080','#FF55A5','#FFAAD0'],name:'Neon',unlockAt:30},
+  {l:['#7CD7E3','#FFD6E0','#C7B8F5'],d:['#5BC5D2','#FFB8C9','#A998E8'],name:'Pastel',unlockAt:75},
+  {l:['#202020','#606060','#A0A0A0'],d:['#E8E8E8','#A8A8A8','#707070'],name:'Mono',unlockAt:175},
+  {l:['#FF4E50','#FC913A','#F9D423'],d:['#E03A3C','#F08020','#F0CC1A'],name:'Sunset',unlockAt:250},
 ];
 
 function isDark(){return window.matchMedia('(prefers-color-scheme:dark)').matches}
-function getPalette(i){const p=PALETTES[i%PALETTES.length];return isDark()?p.d:p.l}
+
+// Unlocked palette index'lerini yönet
+function loadUnlocked(){
+  try{const s=localStorage.getItem('stUnlocked');if(s)return new Set(JSON.parse(s));}catch(e){}
+  return new Set([0,1,2,3,4,5,6,7]); // başlangıçta ilk 8 açık
+}
+function saveUnlocked(){localStorage.setItem('stUnlocked',JSON.stringify([...unlockedPalettes]));}
+let unlockedPalettes=loadUnlocked();
+function unlockedIndices(){return [...unlockedPalettes].sort((a,b)=>a-b);}
+function getPalette(i){
+  // i'yi unlocked subset üzerinden döndür
+  const arr=unlockedIndices();
+  const p=PALETTES[arr[i%arr.length]];
+  return isDark()?p.d:p.l;
+}
+
+// Score milestone'larında yeni palette aç
+function checkPaletteUnlock(s){
+  for(let i=8;i<PALETTES.length;i++){
+    if(PALETTES[i].unlockAt===s&&!unlockedPalettes.has(i)){
+      unlockedPalettes.add(i);saveUnlocked();
+      showAchievement({label:'YENİ PALET: '+PALETTES[i].name.toUpperCase(),emoji:'🎨'});
+      return true;
+    }
+  }
+  return false;
+}
+
+// Daily streak — günlük geri dönüş hook'u
+function bumpStreak(){
+  const today=new Date().toDateString();
+  const lastPlay=localStorage.getItem('stLastPlay');
+  let streak=parseInt(localStorage.getItem('stStreak')||'0');
+  if(lastPlay===today)return streak;
+  const yest=new Date();yest.setDate(yest.getDate()-1);
+  if(lastPlay===yest.toDateString())streak++;
+  else streak=1;
+  localStorage.setItem('stLastPlay',today);
+  localStorage.setItem('stStreak',streak+'');
+  return streak;
+}
+function getStreak(){return parseInt(localStorage.getItem('stStreak')||'0');}
 
 let blocks=[],mv=null,score=0,best=parseInt(localStorage.getItem('stBest')||'0');
 let camY=0,tCamY=0,combo=0,state='idle',raf=null,particles=[],trims=[];
 let perfectStreak=0,blockH=BASE_BH,burstTimer=0,burstParticles=[];
 let pendingGameOver=false; // reklam gösterilirken oyun sonu ekranını beklet
 let continueUsed=false; // oyun başına 1 kez continue hakkı
+let perfectsCount=0,maxCombo=0; // oyun bazlı istatistik
 
 document.getElementById('bestEl').textContent='BEST: '+best;
 
@@ -324,6 +371,7 @@ function resetState(){
   camY=0;tCamY=0;burstTimer=0;glowTimer=0;pendingGameOver=false;
   achievementsShown=new Set();
   continueUsed=false;
+  perfectsCount=0;maxCombo=0;
 }
 
 function showAchievement(a){
@@ -391,7 +439,8 @@ function drop(){
   const isPerfect=Math.abs(overlap-last.w)<PERFECT_PX;
   let nx,nw;
   if(isPerfect){
-    nx=last.x;nw=last.w;combo++;perfectStreak++;
+    nx=last.x;nw=last.w;combo++;perfectStreak++;perfectsCount++;
+    if(combo>maxCombo)maxCombo=combo;
     spawnParticles(nx,mv.y+Math.round(camY),nw,getPalette(mv.pi)[1],10);
     if(perfectStreak>=FIVEROW_N&&perfectStreak%FIVEROW_N===0){
       growBlocks();spawnBurstParticles();burstTimer=90;
@@ -420,6 +469,7 @@ function drop(){
   setCombo(combo);
   const ach=ACHIEVEMENTS.find(a=>a.at===score&&!achievementsShown.has(a.at));
   if(ach){achievementsShown.add(ach.at);showAchievement(ach);}
+  checkPaletteUnlock(score);
   spawnMv();
   // Kamera: aktif blok ekranın H*0.4 seviyesinden yukarı çıkacaksa kaydır
   const targetY=H*0.4;
@@ -442,11 +492,29 @@ function showGameOver(){
   document.getElementById('ovLabel').textContent='OYUN BİTTİ';
   document.getElementById('ovScore').style.display='block';
   document.getElementById('ovScore').textContent=score;
-  document.getElementById('ovSub').textContent=isNew&&score>0?'Yeni rekor kırdın! 🎉':'Tekrar dene, daha iyisini yapabilirsin.';
+  const perfectPct=score>0?Math.round(perfectsCount/score*100):0;
+  const gap=Math.max(0,best-score);
+  const head=isNew&&score>0?'Yeni rekor kırdın! 🎉':(gap>0&&gap<=10?`Sadece ${gap} fark!`:'Tekrar dene, daha iyisini yapabilirsin.');
+  document.getElementById('ovSub').innerHTML=`${head}<br><span style="opacity:0.65;font-size:10px;letter-spacing:2px">${perfectsCount} PERFECT · ${maxCombo}× COMBO · ${perfectPct}%</span>`;
   document.getElementById('bestBadge').style.display=isNew&&score>0?'block':'none';
   document.getElementById('btn').textContent='TEKRAR OYNA';
   document.getElementById('continueBtn').style.display=(continueUsed||score<5)?'none':'block';
   document.getElementById('adzone').style.display='flex';
+}
+
+function showIntroOverlay(){
+  const ov=document.getElementById('ov');
+  ov.classList.add('intro');
+  ov.style.display='flex';
+  document.getElementById('ovLabel').textContent='BLOCK STACK';
+  document.getElementById('ovScore').style.display='none';
+  document.getElementById('bestBadge').style.display='none';
+  document.getElementById('continueBtn').style.display='none';
+  document.getElementById('adzone').style.display='none';
+  document.getElementById('btn').textContent='BAŞLA';
+  const streak=getStreak();
+  const streakLine=streak>=2?`<span style="display:block;color:#FF8030;font-size:11px;font-weight:700;letter-spacing:2px;margin-bottom:8px">🔥 ${streak} GÜN STREAK!</span>`:'';
+  document.getElementById('ovSub').innerHTML=`${streakLine}Bloğu tam zamanında bırak.<br>Ne kadar yükseğe çıkabilirsin?`;
 }
 
 function resumeFromContinue(){
@@ -530,9 +598,9 @@ function loop(){if(state==='play'){update();draw();raf=requestAnimationFrame(loo
 /* ── BAŞLAT ─────────────────────────────────────────── */
 document.getElementById('btn').addEventListener('click',async()=>{
   getAudio();
-  // TEKRAR OYNA: ölü durumdan geliyorsa önce interstitial göster
   const fromDeath=(state==='dead');
   if(fromDeath){await AdMob.showInterstitial();}
+  else bumpStreak(); // ilk oyun başlangıcı — streak'i artır
   state='play';
   const ov=document.getElementById('ov');
   ov.classList.remove('intro');
@@ -574,6 +642,7 @@ window.matchMedia('(prefers-color-scheme:dark)').addEventListener('change',()=>{
   }
 })();
 window.addEventListener('resize',()=>{if(state!=='play')resize();});
+showIntroOverlay();
 resize();
 </script>
 </body>
