@@ -31,11 +31,18 @@ body{background:#080514}
 #ovSub{font-family:system-ui,-apple-system,sans-serif;font-size:13px;color:var(--ov-sub);margin:12px 0 36px;text-align:center;line-height:1.7;max-width:200px}
 #btn{font-family:system-ui,-apple-system,sans-serif;font-size:14px;font-weight:600;color:var(--btn-color);background:var(--btn-bg);border:0.5px solid var(--btn-border);border-radius:12px;padding:14px 44px;cursor:pointer;pointer-events:all;transition:opacity .15s,transform .1s;letter-spacing:.5px}
 #btn:active{transform:scale(0.96);opacity:0.8}
+#continueBtn{font-family:system-ui,-apple-system,sans-serif;font-size:13px;font-weight:700;color:#fff;background:linear-gradient(135deg,#FFB830,#FF7A00);border:0;border-radius:12px;padding:14px 28px;cursor:pointer;pointer-events:all;letter-spacing:1px;margin-bottom:12px;box-shadow:0 6px 20px rgba(255,140,40,0.4);transition:opacity .15s,transform .1s}
+#continueBtn:active{transform:scale(0.96);opacity:0.85}
 #bestBadge{display:none;margin-bottom:12px;background:var(--badge-bg);border:0.5px solid var(--badge-border);border-radius:8px;padding:5px 18px;font-family:system-ui,-apple-system,sans-serif;font-size:10px;letter-spacing:2px;color:var(--badge-color);font-weight:600}
 #adzone{position:absolute;bottom:0;left:0;width:100%;background:var(--ad-bg);border-top:0.5px solid var(--ad-border);padding:11px 0 calc(11px + var(--sab));display:none;flex-direction:column;align-items:center;gap:4px;pointer-events:none}
 #adzone .ad-label{font-family:system-ui,-apple-system,sans-serif;font-size:8px;letter-spacing:2px;color:var(--ad-text);font-weight:500}
 #adzone .ad-box{font-family:system-ui,-apple-system,sans-serif;font-size:11px;color:var(--ad-text);background:var(--ad-box);border:0.5px solid var(--ad-box-border);border-radius:5px;padding:6px 28px}
 #muteBtn{position:absolute;top:calc(20px + var(--sat));right:16px;width:38px;height:38px;border-radius:50%;background:var(--btn-bg);border:0.5px solid var(--btn-border);color:var(--btn-color);display:flex;align-items:center;justify-content:center;pointer-events:all;cursor:pointer;padding:0;transition:transform .1s,opacity .15s}
+#achEl{position:absolute;top:calc(165px + var(--sat));left:50%;transform:translateX(-50%);background:linear-gradient(135deg,rgba(255,180,80,0.96),rgba(255,140,40,0.96));border-radius:24px;padding:10px 22px;display:flex;align-items:center;gap:10px;opacity:0;pointer-events:none;color:#fff;font-family:system-ui,-apple-system,sans-serif;font-weight:700;font-size:12px;letter-spacing:1.5px;box-shadow:0 6px 24px rgba(255,140,40,0.45);white-space:nowrap}
+.ach-icon{font-size:18px;line-height:1}
+.ach-label{line-height:1}
+@keyframes achShow{0%{opacity:0;transform:translateX(-50%) translateY(-22px) scale(0.7)}12%{opacity:1;transform:translateX(-50%) translateY(0) scale(1.12)}22%{transform:translateX(-50%) translateY(0) scale(1)}82%{opacity:1;transform:translateX(-50%) translateY(0) scale(1)}100%{opacity:0;transform:translateX(-50%) translateY(-4px) scale(1)}}
+#achEl.show{animation:achShow 1900ms cubic-bezier(0.34,1.56,0.64,1) forwards}
 #muteBtn:active{transform:scale(0.92);opacity:0.7}
 #muteBtn svg{width:16px;height:16px;display:block}
 @keyframes scorePunch{0%{transform:translateX(-50%) scale(1)}50%{transform:translateX(-50%) scale(1.18)}100%{transform:translateX(-50%) scale(1)}}
@@ -59,6 +66,7 @@ body{background:#080514}
   </button>
   <div id="notifEl"></div>
   <div id="comboEl"></div>
+  <div id="achEl"></div>
   <div id="burstEl">
     <div id="burstTitle">3 IN A ROW!</div>
   </div>
@@ -67,6 +75,7 @@ body{background:#080514}
     <div id="ovScore">0</div>
     <div id="bestBadge">YENİ REKOR</div>
     <div id="ovSub">Bloğu tam zamanında bırak.<br>Ne kadar yükseğe çıkabilirsin?</div>
+    <button id="continueBtn" style="display:none">📺 REKLAM İZLE — DEVAM ET</button>
     <button id="btn">BAŞLA</button>
   </div>
   <div id="adzone">
@@ -83,10 +92,12 @@ body{background:#080514}
    ════════════════════════════════════════════════════ */
 // APP ID: ca-app-pub-6512468206139061~6649765876
 const ADMOB_CONFIG = {
-  // Android için gerçek ID örneği: ca-app-pub-XXXXXXXXXXXXXXXX/XXXXXXXXXX
   // Test sırasında aşağıdaki test ID'leri kullan:
   bannerAdUnitId:       'ca-app-pub-6512468206139061/8805155929',  // GERÇEK
   interstitialAdUnitId: 'ca-app-pub-6512468206139061/8805155929',  // GERÇEK
+  // Continue-with-ad için rewarded ad unit (AdMob panel'inden oluştur):
+  // Test ID: ca-app-pub-3940256099942544/5224354917
+  rewardedAdUnitId:     'ca-app-pub-3940256099942544/5224354917',
 };
 
 /* ── ADMOB KÖPRÜSÜ ───────────────────────────────────
@@ -99,6 +110,8 @@ const AdMob = {
   _playCount: 0,           // her kaç oyunda bir interstitial göster
   AD_EVERY_N_GAMES: 2,     // her 2 oyunda bir reklam (ayarlayabilirsin)
 
+  _rewardedReady: false,
+
   async init() {
     if (!window.Capacitor?.Plugins?.AdMob) return;
     try {
@@ -108,7 +121,49 @@ const AdMob = {
         initializeForTesting: false,
       });
       this.prepareInterstitial();
+      this.prepareRewarded();
     } catch(e) { console.warn('AdMob init:', e); }
+  },
+
+  async prepareRewarded() {
+    if (!window.Capacitor?.Plugins?.AdMob) return;
+    try {
+      await window.Capacitor.Plugins.AdMob.prepareRewardVideoAd({
+        adId: ADMOB_CONFIG.rewardedAdUnitId,
+        isTesting: false,
+      });
+      this._rewardedReady = true;
+    } catch(e) { console.warn('Rewarded prepare:', e); }
+  },
+
+  async showRewarded() {
+    if (window.Capacitor?.Plugins?.AdMob && this._rewardedReady) {
+      try {
+        await window.Capacitor.Plugins.AdMob.showRewardVideoAd();
+        this._rewardedReady = false;
+        setTimeout(() => this.prepareRewarded(), 1000);
+        return true;
+      } catch(e) { console.warn('Rewarded show:', e); return false; }
+    }
+    // Tarayıcı / dev — simüle et
+    return new Promise(resolve => this._simulateRewarded(resolve));
+  },
+
+  _simulateRewarded(resolve) {
+    const overlay = document.createElement('div');
+    overlay.style.cssText = `position:fixed;inset:0;background:rgba(0,0,0,0.92);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;font-family:system-ui,sans-serif;`;
+    overlay.innerHTML = `
+      <div style="color:rgba(255,255,255,0.3);font-size:10px;letter-spacing:2px;margin-bottom:16px">REWARDED REKLAM</div>
+      <div style="width:300px;height:250px;background:rgba(255,255,255,0.06);border:0.5px solid rgba(255,255,255,0.15);border-radius:12px;display:flex;align-items:center;justify-content:center;">
+        <div style="text-align:center"><div style="color:rgba(255,255,255,0.5);font-size:13px">Rewarded Video</div><div style="color:rgba(255,255,255,0.25);font-size:11px;margin-top:6px">Ödül kazanmak için izle</div></div>
+      </div>
+      <div id="rwCountdown" style="color:rgba(255,255,255,0.4);font-size:12px;margin-top:20px">5 saniye...</div>
+      <button id="rwClaim" style="margin-top:12px;display:none;font-family:system-ui,sans-serif;font-size:13px;font-weight:600;color:#000;background:rgba(255,200,80,0.95);border:0;border-radius:8px;padding:10px 32px;cursor:pointer">ÖDÜLÜ AL</button>
+    `;
+    document.body.appendChild(overlay);
+    let t=5;const cd=overlay.querySelector('#rwCountdown'),btn=overlay.querySelector('#rwClaim');
+    const timer=setInterval(()=>{t--;if(t>0){cd.textContent=t+' saniye...';}else{clearInterval(timer);cd.style.display='none';btn.style.display='block';}},1000);
+    btn.addEventListener('click',()=>{document.body.removeChild(overlay);resolve(true);});
   },
 
   async prepareInterstitial() {
@@ -124,62 +179,34 @@ const AdMob = {
 
   async showInterstitial() {
     this._playCount++;
-    // Her N oyunda bir göster
     if (this._playCount % this.AD_EVERY_N_GAMES !== 0) return;
 
     if (window.Capacitor?.Plugins?.AdMob && this._interstitialReady) {
-      // Gerçek cihaz — AdMob interstitial göster
       try {
         await window.Capacitor.Plugins.AdMob.showInterstitial();
         this._interstitialReady = false;
-        // Bir sonraki reklam için hazırla
         setTimeout(() => this.prepareInterstitial(), 1000);
       } catch(e) { console.warn('AdMob show:', e); }
     } else {
-      // Tarayıcı / geliştirme ortamı — simüle et
-      this._simulateAd();
+      await new Promise(resolve => this._simulateAd(resolve));
     }
   },
 
-  _simulateAd() {
-    // Geliştirme sırasında reklam simülasyonu
+  _simulateAd(resolve) {
     const overlay = document.createElement('div');
-    overlay.style.cssText = `
-      position:fixed;inset:0;background:rgba(0,0,0,0.92);
-      display:flex;flex-direction:column;align-items:center;
-      justify-content:center;z-index:9999;font-family:system-ui,sans-serif;
-    `;
+    overlay.style.cssText = `position:fixed;inset:0;background:rgba(0,0,0,0.92);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;font-family:system-ui,sans-serif;`;
     overlay.innerHTML = `
       <div style="color:rgba(255,255,255,0.3);font-size:10px;letter-spacing:2px;margin-bottom:16px">REKLAM</div>
       <div style="width:300px;height:250px;background:rgba(255,255,255,0.06);border:0.5px solid rgba(255,255,255,0.15);border-radius:12px;display:flex;align-items:center;justify-content:center;">
-        <div style="text-align:center">
-          <div style="color:rgba(255,255,255,0.5);font-size:13px">AdMob Interstitial</div>
-          <div style="color:rgba(255,255,255,0.25);font-size:11px;margin-top:6px">300×250</div>
-        </div>
+        <div style="text-align:center"><div style="color:rgba(255,255,255,0.5);font-size:13px">AdMob Interstitial</div><div style="color:rgba(255,255,255,0.25);font-size:11px;margin-top:6px">300×250</div></div>
       </div>
       <div id="adCountdown" style="color:rgba(255,255,255,0.4);font-size:12px;margin-top:20px">5 saniye...</div>
       <button id="adClose" style="margin-top:12px;display:none;font-family:system-ui,sans-serif;font-size:13px;font-weight:600;color:#fff;background:rgba(255,255,255,0.12);border:0.5px solid rgba(255,255,255,0.25);border-radius:8px;padding:10px 32px;cursor:pointer">Kapat</button>
     `;
     document.body.appendChild(overlay);
-
-    let t = 5;
-    const countdown = overlay.querySelector('#adCountdown');
-    const closeBtn = overlay.querySelector('#adClose');
-    const timer = setInterval(() => {
-      t--;
-      if (t > 0) {
-        countdown.textContent = t + ' saniye...';
-      } else {
-        clearInterval(timer);
-        countdown.style.display = 'none';
-        closeBtn.style.display = 'block';
-      }
-    }, 1000);
-
-    closeBtn.addEventListener('click', () => {
-      document.body.removeChild(overlay);
-      showGameOver(); // reklam kapandıktan sonra oyun sonu ekranı
-    });
+    let t=5;const cd=overlay.querySelector('#adCountdown'),btn=overlay.querySelector('#adClose');
+    const timer=setInterval(()=>{t--;if(t>0){cd.textContent=t+' saniye...';}else{clearInterval(timer);cd.style.display='none';btn.style.display='block';}},1000);
+    btn.addEventListener('click',()=>{document.body.removeChild(overlay);resolve();});
   }
 };
 
@@ -223,6 +250,17 @@ function playGameOver(){beep(300,'sawtooth',0.15,0.15,0);beep(200,'sawtooth',0.2
 
 /* ── OYUN DEĞİŞKENLERİ ──────────────────────────────── */
 const PERFECT_PX=5,FIVEROW_N=3,FIVEROW_GROW=0.20;
+const ACHIEVEMENTS=[
+  {at:10, label:'GETTING STARTED', emoji:'🎯'},
+  {at:25, label:'STACKER',         emoji:'🏗️'},
+  {at:50, label:'IMPRESSIVE',      emoji:'🔥'},
+  {at:100,label:'CENTURION',       emoji:'💯'},
+  {at:150,label:'UNSTOPPABLE',     emoji:'⚡'},
+  {at:200,label:'LEGENDARY',       emoji:'👑'},
+  {at:300,label:'INSANE',          emoji:'🌟'},
+  {at:500,label:'GOD MODE',        emoji:'🎆'},
+];
+let achievementsShown=new Set();
 let glowTimer=0;
 let W=360,H=600,BASE_BH=28,START_W=224;
 const cv=document.getElementById('gc'),ctx=cv.getContext('2d');
@@ -257,6 +295,7 @@ let blocks=[],mv=null,score=0,best=parseInt(localStorage.getItem('stBest')||'0')
 let camY=0,tCamY=0,combo=0,state='idle',raf=null,particles=[],trims=[];
 let perfectStreak=0,blockH=BASE_BH,burstTimer=0,burstParticles=[];
 let pendingGameOver=false; // reklam gösterilirken oyun sonu ekranını beklet
+let continueUsed=false; // oyun başına 1 kez continue hakkı
 
 document.getElementById('bestEl').textContent='BEST: '+best;
 
@@ -283,6 +322,17 @@ function resetState(){
   blocks=[];particles=[];burstParticles=[];trims=[];
   score=0;combo=0;perfectStreak=0;blockH=BASE_BH;
   camY=0;tCamY=0;burstTimer=0;glowTimer=0;pendingGameOver=false;
+  achievementsShown=new Set();
+  continueUsed=false;
+}
+
+function showAchievement(a){
+  const el=document.getElementById('achEl');
+  el.innerHTML=`<span class="ach-icon">${a.emoji}</span><span class="ach-label">${a.label}</span>`;
+  el.classList.remove('show');void el.offsetWidth;el.classList.add('show');
+  beep(880,'sine',0.18,0.25,0);beep(1175,'sine',0.18,0.22,0.08);beep(1760,'sine',0.22,0.2,0.16);
+  haptic('success');
+  setTimeout(()=>el.classList.remove('show'),1900);
 }
 
 function introStack(){
@@ -320,8 +370,9 @@ function spawnMv(){
   const last=blocks[blocks.length-1];
   const pi=score%PALETTES.length,dir=Math.random()<0.5?1:-1;
   const sc=W/360;
-  // Daha uzun ramp: 0'dan 100'e doğru 3.2→9.0
-  const spd=Math.min(3.2+score*0.06,9.0)*sc;
+  // Continuous (plato yok): sqrt diminishing returns
+  // score 0 → 3.0, 25 → 6.25, 50 → 7.6, 100 → 9.5, 200 → 12.2, 400 → 16
+  const spd=Math.min((3.0+Math.sqrt(score)*0.65)*sc,16*sc);
   mv={x:dir>0?-last.w:W,y:last.y-blockH,w:last.w,h:blockH,dir,spd,pi};
 }
 
@@ -367,26 +418,20 @@ function drop(){
   const sc=document.getElementById('scoreEl');
   sc.textContent=score;sc.classList.remove('punch');void sc.offsetWidth;sc.classList.add('punch');
   setCombo(combo);
+  const ach=ACHIEVEMENTS.find(a=>a.at===score&&!achievementsShown.has(a.at));
+  if(ach){achievementsShown.add(ach.at);showAchievement(ach);}
   spawnMv();
   // Kamera: aktif blok ekranın H*0.4 seviyesinden yukarı çıkacaksa kaydır
   const targetY=H*0.4;
   if(mv.y+tCamY<targetY) tCamY=targetY-mv.y;
 }
 
-/* Oyun bitince önce reklam, sonra game over ekranı */
-async function triggerGameOver(){
+/* Oyun bitince direkt game over ekranı (interstitial TEKRAR OYNA'ya kaldı) */
+function triggerGameOver(){
   state='dead';mv=null;
-  // Skoru ve best'i hemen güncelle
   const isNew=score>best;
   if(isNew){best=score;localStorage.setItem('stBest',best);document.getElementById('bestEl').textContent='BEST: '+best;haptic('success');}
-  // Önce interstitial göster (varsa — her 2 oyunda bir)
-  await AdMob.showInterstitial();
-  // Eğer simülasyon değilse (gerçek cihaz) direkt game over ekranını göster
-  // Simülasyonda showGameOver, overlay kapanınca çağrılır
-  if(window.Capacitor?.Plugins?.AdMob){
-    showGameOver();
-  }
-  // Simülasyon durumunda showGameOver AdMob._simulateAd içinden çağrılır
+  showGameOver();
 }
 
 function showGameOver(){
@@ -400,7 +445,23 @@ function showGameOver(){
   document.getElementById('ovSub').textContent=isNew&&score>0?'Yeni rekor kırdın! 🎉':'Tekrar dene, daha iyisini yapabilirsin.';
   document.getElementById('bestBadge').style.display=isNew&&score>0?'block':'none';
   document.getElementById('btn').textContent='TEKRAR OYNA';
+  document.getElementById('continueBtn').style.display=(continueUsed||score<5)?'none':'block';
   document.getElementById('adzone').style.display='flex';
+}
+
+function resumeFromContinue(){
+  continueUsed=true;
+  const ov=document.getElementById('ov');
+  ov.style.display='none';
+  document.getElementById('adzone').style.display='none';
+  document.getElementById('ovScore').style.display='none';
+  document.getElementById('bestBadge').style.display='none';
+  document.getElementById('continueBtn').style.display='none';
+  // Stack ve skor olduğu gibi kalır, sadece yeni mv spawn
+  state='play';
+  spawnMv();
+  if(raf)cancelAnimationFrame(raf);
+  loop();
 }
 
 /* ── RENDER ─────────────────────────────────────────── */
@@ -467,8 +528,11 @@ function draw(){
 function loop(){if(state==='play'){update();draw();raf=requestAnimationFrame(loop);}else draw();}
 
 /* ── BAŞLAT ─────────────────────────────────────────── */
-document.getElementById('btn').addEventListener('click',()=>{
+document.getElementById('btn').addEventListener('click',async()=>{
   getAudio();
+  // TEKRAR OYNA: ölü durumdan geliyorsa önce interstitial göster
+  const fromDeath=(state==='dead');
+  if(fromDeath){await AdMob.showInterstitial();}
   state='play';
   const ov=document.getElementById('ov');
   ov.classList.remove('intro');
@@ -476,7 +540,16 @@ document.getElementById('btn').addEventListener('click',()=>{
   document.getElementById('adzone').style.display='none';
   document.getElementById('ovScore').style.display='none';
   document.getElementById('bestBadge').style.display='none';
+  document.getElementById('continueBtn').style.display='none';
   initGame();if(raf)cancelAnimationFrame(raf);loop();
+});
+document.getElementById('continueBtn').addEventListener('click',async()=>{
+  getAudio();
+  // Continue spam'i önlemek için butonu disable et
+  const cb=document.getElementById('continueBtn');cb.disabled=true;cb.style.opacity='0.5';
+  const earned=await AdMob.showRewarded();
+  cb.disabled=false;cb.style.opacity='1';
+  if(earned)resumeFromContinue();
 });
 cv.addEventListener('click',()=>{if(state==='play')drop();});
 cv.addEventListener('touchstart',e=>{e.preventDefault();if(state==='play')drop();},{passive:false});
