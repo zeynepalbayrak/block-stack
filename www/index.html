@@ -403,9 +403,12 @@ function introStack(){
 function initGame(){
   resetState();
   const bx=(W-START_W)/2;
-  // Stack başlangıcı ekranın yaklaşık %70'i; parmak alanı için alt %30 boş kalır
-  const baseY=Math.round(H*0.7);
-  for(let i=0;i<4;i++)blocks.push({x:bx,y:baseY-i*blockH,w:START_W,h:blockH,pi:0,sq:0});
+  // Top of stack at ~%70 of screen height (so finger area below stays clear);
+  // foundation extends down to ~%96 of screen so bottom doesn't look empty
+  const topY=Math.round(H*0.7);
+  const numBlocks=Math.max(4,Math.ceil((H*0.96-topY)/blockH)+1);
+  // Bottom-first push so blocks[length-1] is the topmost (what spawnMv targets)
+  for(let i=numBlocks-1;i>=0;i--)blocks.push({x:bx,y:topY+i*blockH,w:START_W,h:blockH,pi:0,sq:0});
   spawnMv();
   document.getElementById('scoreEl').textContent='0';
   document.getElementById('notifEl').classList.remove('show');
