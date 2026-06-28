@@ -528,16 +528,20 @@ function resumeFromContinue(){
   document.getElementById('ovScore').style.display='none';
   document.getElementById('bestBadge').style.display='none';
   document.getElementById('continueBtn').style.display='none';
-  // Hediye: son bloğu START_W*0.8 seviyesine genişlet, ortala
+  // Contextual genişletme: dar bloklarda anlamlı yardım, geniş bloklarda minimal
+  // 30px → 71, 80px → 106, 150px → ~157, 200px+ → değişmez
   const last=blocks[blocks.length-1];
-  const targetW=Math.min(Math.round(START_W*0.8),START_W);
-  if(last.w<targetW){
-    last.x=Math.round(last.x+last.w/2-targetW/2);
-    last.w=targetW;
+  const cur=last.w;
+  const boost=Math.max(Math.round(50-cur*0.3),12);
+  const cap=Math.round(START_W*0.7);
+  const newW=Math.max(cur,Math.min(cur+boost,cap));
+  if(newW>cur){
+    last.x=Math.round(last.x+cur/2-newW/2);
+    last.w=newW;
     if(last.x<4)last.x=4;
     if(last.x+last.w>W-4)last.x=W-4-last.w;
     last.sq=1.0;glowTimer=30;
-    showNotif('+ BLOK GENİŞLETİLDİ',isDark()?'#FFB830':'#E08020');
+    showNotif('+'+(newW-cur)+'PX',isDark()?'#FFB830':'#E08020');
   }
   state='play';
   spawnMv();
