@@ -1,14 +1,42 @@
 <svg width="2732" height="2732" viewBox="0 0 2732 2732" xmlns="http://www.w3.org/2000/svg">
-  <rect width="2732" height="2732" fill="#080514"/>
-  <g transform="translate(854, 854) scale(1.0)">
-    <rect x="232" y="660" width="560" height="120" rx="16" fill="#5B4FCF"/>
-    <rect x="232" y="660" width="560" height="54" rx="16" fill="#7B6FEF"/>
-    <rect x="248" y="676" width="80" height="10" rx="4" fill="#A99EF5"/>
-    <rect x="262" y="510" width="520" height="120" rx="16" fill="#1A8A92"/>
-    <rect x="262" y="510" width="520" height="54" rx="16" fill="#22B5C0"/>
-    <rect x="278" y="526" width="80" height="10" rx="4" fill="#6ED4DB"/>
-    <rect x="222" y="360" width="480" height="120" rx="16" fill="#8B2222"/>
-    <rect x="222" y="360" width="480" height="54" rx="16" fill="#C03030"/>
-    <rect x="238" y="376" width="80" height="10" rx="4" fill="#E06060"/>
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="50%" r="70%">
+      <stop offset="0%" stop-color="#0E0A20"/>
+      <stop offset="100%" stop-color="#040210"/>
+    </radialGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="130%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="8"/>
+      <feOffset dx="0" dy="6" result="off"/>
+      <feComponentTransfer><feFuncA type="linear" slope="0.45"/></feComponentTransfer>
+      <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <rect width="2732" height="2732" fill="url(#bg)"/>
+  <g transform="translate(854, 854)">
+    <g filter="url(#shadow)">
+      <rect x="232" y="666" width="560" height="104" rx="14" fill="#8B4513"/>
+      <rect x="232" y="666" width="560" height="47" rx="14" fill="#B5601A"/>
+      <rect x="250" y="682" width="84" height="9" rx="3" fill="#D4843A"/>
+    </g>
+    <g filter="url(#shadow)">
+      <rect x="247" y="554" width="540" height="104" rx="14" fill="#1A5E32"/>
+      <rect x="247" y="554" width="540" height="47" rx="14" fill="#22853E"/>
+      <rect x="265" y="570" width="84" height="9" rx="3" fill="#5CBB7C"/>
+    </g>
+    <g filter="url(#shadow)">
+      <rect x="248" y="442" width="520" height="104" rx="14" fill="#8B2222"/>
+      <rect x="248" y="442" width="520" height="47" rx="14" fill="#C03030"/>
+      <rect x="266" y="458" width="84" height="9" rx="3" fill="#E06060"/>
+    </g>
+    <g filter="url(#shadow)">
+      <rect x="268" y="330" width="500" height="104" rx="14" fill="#1A8A92"/>
+      <rect x="268" y="330" width="500" height="47" rx="14" fill="#22B5C0"/>
+      <rect x="286" y="346" width="84" height="9" rx="3" fill="#6ED4DB"/>
+    </g>
+    <g filter="url(#shadow)">
+      <rect x="274" y="218" width="460" height="104" rx="14" fill="#5B4FCF"/>
+      <rect x="274" y="218" width="460" height="47" rx="14" fill="#7B6FEF"/>
+      <rect x="292" y="234" width="84" height="9" rx="3" fill="#A99EF5"/>
+    </g>
   </g>
 </svg>
