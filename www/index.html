@@ -203,7 +203,7 @@ function resize(){
   const s=W/360;
   BASE_BH=Math.round(28*s);
   START_W=Math.round(224*s);
-  if(state!=='play'){blockH=BASE_BH;initGame();mv=null;draw();}
+  if(state!=='play'){blockH=BASE_BH;introStack();mv=null;draw();}
 }
 const PALETTES=[
   {l:['#7B5EA7','#9B7EC8','#C4AEE8'],d:['#5B4FCF','#7B6FEF','#A99EF5']},
@@ -229,6 +229,26 @@ document.getElementById('bestEl').textContent='BEST: '+best;
 function rnd(a,b){return Math.random()*(b-a)+a}
 function spawnParticles(x,y,w,color,n){for(let i=0;i<(n||10);i++)particles.push({x:x+rnd(0,w),y,vx:rnd(-2.5,2.5),vy:rnd(-3.5,-0.5),a:1,color,r:rnd(1.5,3)});}
 function spawnBurstParticles(){const cols=['#FFB830','#FFD060','#FF8C00','#FFF0A0','#FF6600'];for(let i=0;i<60;i++){const a=rnd(0,Math.PI*2),s=rnd(2,8);burstParticles.push({x:W/2,y:H/2,vx:Math.cos(a)*s,vy:Math.sin(a)*s,a:1,color:cols[Math.floor(rnd(0,cols.length))],r:rnd(2,5)});}}
+
+function introStack(){
+  blocks=[];particles=[];burstParticles=[];score=0;combo=0;perfectStreak=0;blockH=BASE_BH;
+  camY=0;tCamY=0;notifTimer=0;comboTimer=0;burstTimer=0;pendingGameOver=false;
+  // Açılış için gösteriş amaçlı renkli, hafif kaymalı bir kule
+  const n=11;
+  let w=START_W,x=(W-START_W)/2;
+  for(let i=0;i<n;i++){
+    blocks.push({x:Math.round(x),y:H-70-i*blockH,w:Math.round(w),h:blockH,pi:i});
+    // Her birkaç blokta hafifçe daralt + yatay kaydır
+    if(i%2===0){
+      const trim=Math.max(2,Math.round(w*0.04));
+      const dir=i%4===0?1:-1;
+      w=Math.max(BASE_BH*1.6,w-trim);
+      x+=dir*(trim/2);
+    }
+  }
+  // Üstteki blokların ekranın yarısında durması için kamerayı kaydır
+  tCamY=(n-5)*blockH;camY=tCamY;
+}
 
 function initGame(){
   blocks=[];particles=[];burstParticles=[];score=0;combo=0;perfectStreak=0;blockH=BASE_BH;
