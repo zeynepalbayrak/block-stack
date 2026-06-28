@@ -528,7 +528,17 @@ function resumeFromContinue(){
   document.getElementById('ovScore').style.display='none';
   document.getElementById('bestBadge').style.display='none';
   document.getElementById('continueBtn').style.display='none';
-  // Stack ve skor olduğu gibi kalır, sadece yeni mv spawn
+  // Hediye: son bloğu START_W*0.8 seviyesine genişlet, ortala
+  const last=blocks[blocks.length-1];
+  const targetW=Math.min(Math.round(START_W*0.8),START_W);
+  if(last.w<targetW){
+    last.x=Math.round(last.x+last.w/2-targetW/2);
+    last.w=targetW;
+    if(last.x<4)last.x=4;
+    if(last.x+last.w>W-4)last.x=W-4-last.w;
+    last.sq=1.0;glowTimer=30;
+    showNotif('+ BLOK GENİŞLETİLDİ',isDark()?'#FFB830':'#E08020');
+  }
   state='play';
   spawnMv();
   if(raf)cancelAnimationFrame(raf);
