@@ -159,16 +159,16 @@ const AdMob = {
     const overlay = document.createElement('div');
     overlay.style.cssText = `position:fixed;inset:0;background:rgba(0,0,0,0.92);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;font-family:system-ui,sans-serif;`;
     overlay.innerHTML = `
-      <div style="color:rgba(255,255,255,0.3);font-size:10px;letter-spacing:2px;margin-bottom:16px">REWARDED REKLAM</div>
+      <div style="color:rgba(255,255,255,0.3);font-size:10px;letter-spacing:2px;margin-bottom:16px">${t('rewardedAd')}</div>
       <div style="width:300px;height:250px;background:rgba(255,255,255,0.06);border:0.5px solid rgba(255,255,255,0.15);border-radius:12px;display:flex;align-items:center;justify-content:center;">
-        <div style="text-align:center"><div style="color:rgba(255,255,255,0.5);font-size:13px">Rewarded Video</div><div style="color:rgba(255,255,255,0.25);font-size:11px;margin-top:6px">Ödül kazanmak için izle</div></div>
+        <div style="text-align:center"><div style="color:rgba(255,255,255,0.5);font-size:13px">Rewarded Video</div><div style="color:rgba(255,255,255,0.25);font-size:11px;margin-top:6px">${t('rewardedSub')}</div></div>
       </div>
-      <div id="rwCountdown" style="color:rgba(255,255,255,0.4);font-size:12px;margin-top:20px">5 saniye...</div>
-      <button id="rwClaim" style="margin-top:12px;display:none;font-family:system-ui,sans-serif;font-size:13px;font-weight:600;color:#000;background:rgba(255,200,80,0.95);border:0;border-radius:8px;padding:10px 32px;cursor:pointer">ÖDÜLÜ AL</button>
+      <div id="rwCountdown" style="color:rgba(255,255,255,0.4);font-size:12px;margin-top:20px">${t('adCountdown',{n:5})}</div>
+      <button id="rwClaim" style="margin-top:12px;display:none;font-family:system-ui,sans-serif;font-size:13px;font-weight:600;color:#000;background:rgba(255,200,80,0.95);border:0;border-radius:8px;padding:10px 32px;cursor:pointer">${t('rewardedClaim')}</button>
     `;
     document.body.appendChild(overlay);
-    let t=5;const cd=overlay.querySelector('#rwCountdown'),btn=overlay.querySelector('#rwClaim');
-    const timer=setInterval(()=>{t--;if(t>0){cd.textContent=t+' saniye...';}else{clearInterval(timer);cd.style.display='none';btn.style.display='block';}},1000);
+    let n=5;const cd=overlay.querySelector('#rwCountdown'),btn=overlay.querySelector('#rwClaim');
+    const timer=setInterval(()=>{n--;if(n>0){cd.textContent=t('adCountdown',{n:n});}else{clearInterval(timer);cd.style.display='none';btn.style.display='block';}},1000);
     btn.addEventListener('click',()=>{document.body.removeChild(overlay);resolve(true);});
   },
 
@@ -202,16 +202,16 @@ const AdMob = {
     const overlay = document.createElement('div');
     overlay.style.cssText = `position:fixed;inset:0;background:rgba(0,0,0,0.92);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;font-family:system-ui,sans-serif;`;
     overlay.innerHTML = `
-      <div style="color:rgba(255,255,255,0.3);font-size:10px;letter-spacing:2px;margin-bottom:16px">REKLAM</div>
+      <div style="color:rgba(255,255,255,0.3);font-size:10px;letter-spacing:2px;margin-bottom:16px">${t('ad')}</div>
       <div style="width:300px;height:250px;background:rgba(255,255,255,0.06);border:0.5px solid rgba(255,255,255,0.15);border-radius:12px;display:flex;align-items:center;justify-content:center;">
         <div style="text-align:center"><div style="color:rgba(255,255,255,0.5);font-size:13px">AdMob Interstitial</div><div style="color:rgba(255,255,255,0.25);font-size:11px;margin-top:6px">300×250</div></div>
       </div>
-      <div id="adCountdown" style="color:rgba(255,255,255,0.4);font-size:12px;margin-top:20px">5 saniye...</div>
-      <button id="adClose" style="margin-top:12px;display:none;font-family:system-ui,sans-serif;font-size:13px;font-weight:600;color:#fff;background:rgba(255,255,255,0.12);border:0.5px solid rgba(255,255,255,0.25);border-radius:8px;padding:10px 32px;cursor:pointer">Kapat</button>
+      <div id="adCountdown" style="color:rgba(255,255,255,0.4);font-size:12px;margin-top:20px">${t('adCountdown',{n:5})}</div>
+      <button id="adClose" style="margin-top:12px;display:none;font-family:system-ui,sans-serif;font-size:13px;font-weight:600;color:#fff;background:rgba(255,255,255,0.12);border:0.5px solid rgba(255,255,255,0.25);border-radius:8px;padding:10px 32px;cursor:pointer">${t('adClose')}</button>
     `;
     document.body.appendChild(overlay);
-    let t=5;const cd=overlay.querySelector('#adCountdown'),btn=overlay.querySelector('#adClose');
-    const timer=setInterval(()=>{t--;if(t>0){cd.textContent=t+' saniye...';}else{clearInterval(timer);cd.style.display='none';btn.style.display='block';}},1000);
+    let n=5;const cd=overlay.querySelector('#adCountdown'),btn=overlay.querySelector('#adClose');
+    const timer=setInterval(()=>{n--;if(n>0){cd.textContent=t('adCountdown',{n:n});}else{clearInterval(timer);cd.style.display='none';btn.style.display='block';}},1000);
     btn.addEventListener('click',()=>{document.body.removeChild(overlay);resolve();});
   }
 };
@@ -253,6 +253,49 @@ function playPerfect(){beep(660,'sine',0.15,0.22);beep(880,'sine',0.12,0.15,0.06
 function playCombo(c){const b=440+c*20;beep(b,'sine',0.1,0.18);beep(b*1.25,'sine',0.1,0.15,0.08);beep(b*1.5,'sine',0.1,0.12,0.16);}
 function playFiveRow(){beep(523,'sine',0.1,0.2,0);beep(659,'sine',0.1,0.2,0.1);beep(784,'sine',0.1,0.2,0.2);beep(1047,'sine',0.25,0.25,0.3);}
 function playGameOver(){beep(300,'sawtooth',0.15,0.15,0);beep(200,'sawtooth',0.2,0.12,0.15);beep(120,'sawtooth',0.3,0.1,0.3);}
+
+/* ── i18n ────────────────────────────────────────────
+   Cihaz dili tr* ise Türkçe, değilse İngilizce.
+   Brand/genre string'leri (BLOCK STACK, PERFECT!, 3 IN A ROW!,
+   achievement adları, palette adları) çevrilmez. */
+const LOCALE=(typeof navigator!=='undefined'&&navigator.language||'en').toLowerCase().startsWith('tr')?'tr':'en';
+const STRINGS={
+  tr:{
+    start:'BAŞLA', playAgain:'TEKRAR OYNA', gameOver:'OYUN BİTTİ',
+    best:'BEST: {n}', combo:'{n}× COMBO', newBest:'YENİ REKOR',
+    newRecord:'Yeni rekor kırdın! 🎉',
+    tryAgain:'Tekrar dene, daha iyisini yapabilirsin.',
+    justAway:'Sadece {n} fark!',
+    introSub:'Bloğu tam zamanında bırak.<br>Ne kadar yükseğe çıkabilirsin?',
+    continueAd:'📺 REKLAM İZLE — DEVAM ET',
+    dayStreak:'🔥 {n} GÜN STREAK!',
+    newPalette:'YENİ PALET: {name}',
+    ad:'REKLAM', adClose:'Kapat', adCountdown:'{n} saniye...',
+    rewardedAd:'REWARDED REKLAM', rewardedSub:'Ödül kazanmak için izle', rewardedClaim:'ÖDÜLÜ AL',
+    expansionPx:'+{n}PX',
+    statsLine:'{p} PERFECT · {c}× COMBO · {pct}%',
+  },
+  en:{
+    start:'START', playAgain:'PLAY AGAIN', gameOver:'GAME OVER',
+    best:'BEST: {n}', combo:'{n}× COMBO', newBest:'NEW RECORD',
+    newRecord:'New record! 🎉',
+    tryAgain:'Try again, you can do better.',
+    justAway:'Just {n} away!',
+    introSub:'Drop the block at the perfect moment.<br>How high can you go?',
+    continueAd:'📺 WATCH AD — CONTINUE',
+    dayStreak:'🔥 {n} DAY STREAK!',
+    newPalette:'NEW PALETTE: {name}',
+    ad:'AD', adClose:'Close', adCountdown:'{n} seconds...',
+    rewardedAd:'REWARDED AD', rewardedSub:'Watch to earn reward', rewardedClaim:'CLAIM REWARD',
+    expansionPx:'+{n}PX',
+    statsLine:'{p} PERFECT · {c}× COMBO · {pct}%',
+  },
+};
+function t(key,vars){
+  let s=(STRINGS[LOCALE]&&STRINGS[LOCALE][key])||STRINGS.en[key]||key;
+  if(vars)for(const k in vars)s=s.split('{'+k+'}').join(vars[k]);
+  return s;
+}
 
 /* ── OYUN DEĞİŞKENLERİ ──────────────────────────────── */
 const PERFECT_PX=5,FIVEROW_N=3,FIVEROW_GROW=0.20;
@@ -321,7 +364,7 @@ function checkPaletteUnlock(s){
   for(let i=8;i<PALETTES.length;i++){
     if(PALETTES[i].unlockAt===s&&!unlockedPalettes.has(i)){
       unlockedPalettes.add(i);saveUnlocked();
-      showAchievement({label:'YENİ PALET: '+PALETTES[i].name.toUpperCase(),emoji:'🎨'});
+      showAchievement({label:t('newPalette',{name:PALETTES[i].name.toUpperCase()}),emoji:'🎨'});
       return true;
     }
   }
@@ -350,7 +393,7 @@ let pendingGameOver=false; // reklam gösterilirken oyun sonu ekranını beklet
 let continueUsed=false; // oyun başına 1 kez continue hakkı
 let perfectsCount=0,maxCombo=0; // oyun bazlı istatistik
 
-document.getElementById('bestEl').textContent='BEST: '+best;
+document.getElementById('bestEl').textContent=t('best',{n:best});
 
 function rnd(a,b){return Math.random()*(b-a)+a}
 function spawnParticles(x,y,w,color,n){for(let i=0;i<(n||10);i++)particles.push({x:x+rnd(0,w),y,vx:rnd(-2.5,2.5),vy:rnd(-3.5,-0.5),a:1,color,r:rnd(1.5,3)});}
@@ -367,7 +410,7 @@ function showNotif(msg,color){
 }
 function setCombo(c){
   const el=document.getElementById('comboEl');
-  if(c>1){el.textContent=c+'× COMBO';el.classList.add('show');}
+  if(c>1){el.textContent=t('combo',{n:c});el.classList.add('show');}
   else el.classList.remove('show');
 }
 
@@ -489,7 +532,7 @@ function drop(){
 function triggerGameOver(){
   state='dead';mv=null;
   const isNew=score>best;
-  if(isNew){best=score;localStorage.setItem('stBest',best);document.getElementById('bestEl').textContent='BEST: '+best;haptic('success');}
+  if(isNew){best=score;localStorage.setItem('stBest',best);document.getElementById('bestEl').textContent=t('best',{n:best});haptic('success');}
   showGameOver();
 }
 
@@ -498,15 +541,15 @@ function showGameOver(){
   const ov=document.getElementById('ov');
   ov.classList.remove('intro');
   ov.style.display='flex';
-  document.getElementById('ovLabel').textContent='OYUN BİTTİ';
+  document.getElementById('ovLabel').textContent=t('gameOver');
   document.getElementById('ovScore').style.display='block';
   document.getElementById('ovScore').textContent=score;
   const perfectPct=score>0?Math.round(perfectsCount/score*100):0;
   const gap=Math.max(0,best-score);
-  const head=isNew&&score>0?'Yeni rekor kırdın! 🎉':(gap>0&&gap<=10?`Sadece ${gap} fark!`:'Tekrar dene, daha iyisini yapabilirsin.');
-  document.getElementById('ovSub').innerHTML=`${head}<br><span style="opacity:0.65;font-size:10px;letter-spacing:2px">${perfectsCount} PERFECT · ${maxCombo}× COMBO · ${perfectPct}%</span>`;
+  const head=isNew&&score>0?t('newRecord'):(gap>0&&gap<=10?t('justAway',{n:gap}):t('tryAgain'));
+  document.getElementById('ovSub').innerHTML=`${head}<br><span style="opacity:0.65;font-size:10px;letter-spacing:2px">${t('statsLine',{p:perfectsCount,c:maxCombo,pct:perfectPct})}</span>`;
   document.getElementById('bestBadge').style.display=isNew&&score>0?'block':'none';
-  document.getElementById('btn').textContent='TEKRAR OYNA';
+  document.getElementById('btn').textContent=t('playAgain');
   document.getElementById('continueBtn').style.display=(continueUsed||score<5)?'none':'block';
   document.getElementById('adzone').style.display='flex';
 }
@@ -520,10 +563,10 @@ function showIntroOverlay(){
   document.getElementById('bestBadge').style.display='none';
   document.getElementById('continueBtn').style.display='none';
   document.getElementById('adzone').style.display='none';
-  document.getElementById('btn').textContent='BAŞLA';
+  document.getElementById('btn').textContent=t('start');
   const streak=getStreak();
-  const streakLine=streak>=2?`<span style="display:block;color:#FF8030;font-size:11px;font-weight:700;letter-spacing:2px;margin-bottom:8px">🔥 ${streak} GÜN STREAK!</span>`:'';
-  document.getElementById('ovSub').innerHTML=`${streakLine}Bloğu tam zamanında bırak.<br>Ne kadar yükseğe çıkabilirsin?`;
+  const streakLine=streak>=2?`<span style="display:block;color:#FF8030;font-size:11px;font-weight:700;letter-spacing:2px;margin-bottom:8px">${t('dayStreak',{n:streak})}</span>`:'';
+  document.getElementById('ovSub').innerHTML=`${streakLine}${t('introSub')}`;
 }
 
 function resumeFromContinue(){
@@ -547,7 +590,7 @@ function resumeFromContinue(){
     if(last.x<4)last.x=4;
     if(last.x+last.w>W-4)last.x=W-4-last.w;
     last.sq=1.0;glowTimer=30;
-    showNotif('+'+(newW-cur)+'PX',isDark()?'#FFB830':'#E08020');
+    showNotif(t('expansionPx',{n:newW-cur}),isDark()?'#FFB830':'#E08020');
   }
   state='play';
   spawnMv();
@@ -647,6 +690,11 @@ cv.addEventListener('touchstart',e=>{e.preventDefault();if(state==='play')drop()
 document.addEventListener('keydown',e=>{if(e.code==='Space'&&state==='play'){e.preventDefault();drop();}});
 document.getElementById('muteBtn').addEventListener('click',e=>{e.stopPropagation();setMuted(!muted);});
 updateMuteIcon();
+
+// Statik HTML metinlerini cihaz diline çevir
+document.getElementById('bestBadge').textContent=t('newBest');
+document.getElementById('continueBtn').textContent=t('continueAd');
+document.querySelectorAll('#adzone .ad-label').forEach(el=>el.textContent=t('ad'));
 window.matchMedia('(prefers-color-scheme:dark)').addEventListener('change',()=>{if(state!=='play')draw();});
 
 // Native bridge — StatusBar + SplashScreen + AdMob (Capacitor yüklüyse)
