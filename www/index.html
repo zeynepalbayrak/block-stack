@@ -409,7 +409,7 @@ function drawBlock(b,cy,isActive){
   const sy0=b.y+cy;
   if(sy0>H+b.h||sy0<-b.h*3)return;
   // Squash: yatayda gerilir, dikeyde sıkışır, alttan sabit kalır
-  const sqx=1+0.10*sq, sqy=1-0.22*sq;
+  const sqx=1+0.18*sq, sqy=1-0.32*sq;
   const dh=b.h*sqy, dw=b.w*sqx;
   const dx=b.x-(dw-b.w)/2;
   const dy=sy0+(b.h-dh);
@@ -448,7 +448,7 @@ function update(){
   if(burstTimer>0){burstTimer--;burstParticles=burstParticles.filter(p=>p.a>0.03);burstParticles.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.vy+=0.15;p.vx*=0.97;p.a*=0.94;});}
   if(glowTimer>0)glowTimer--;
   // Squash decay her blok için
-  for(let i=0;i<blocks.length;i++){if(blocks[i].sq>0.01)blocks[i].sq*=0.82;else blocks[i].sq=0;}
+  for(let i=0;i<blocks.length;i++){if(blocks[i].sq>0.01)blocks[i].sq*=0.86;else blocks[i].sq=0;}
 }
 
 function draw(){
