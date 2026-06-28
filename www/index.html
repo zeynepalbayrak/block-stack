@@ -305,7 +305,9 @@ function introStack(){
 function initGame(){
   resetState();
   const bx=(W-START_W)/2;
-  for(let i=0;i<4;i++)blocks.push({x:bx,y:H-70-i*blockH,w:START_W,h:blockH,pi:0,sq:0});
+  // Stack başlangıcı ekranın yaklaşık %70'i; parmak alanı için alt %30 boş kalır
+  const baseY=Math.round(H*0.7);
+  for(let i=0;i<4;i++)blocks.push({x:bx,y:baseY-i*blockH,w:START_W,h:blockH,pi:0,sq:0});
   spawnMv();
   document.getElementById('scoreEl').textContent='0';
   document.getElementById('notifEl').classList.remove('show');
