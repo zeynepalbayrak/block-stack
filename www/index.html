@@ -90,13 +90,20 @@ body{background:#080514}
    ADMOB AYARLARI — Capacitor kurulumundan sonra
    bu iki ID'yi kendi panelinden alıp buraya yapıştır
    ════════════════════════════════════════════════════ */
-// APP ID: ca-app-pub-6512468206139061~6649765876
-const ADMOB_CONFIG = {
-  // Test sırasında aşağıdaki test ID'leri kullan:
-  bannerAdUnitId:       'ca-app-pub-6512468206139061/8805155929',  // GERÇEK
-  interstitialAdUnitId: 'ca-app-pub-6512468206139061/8805155929',  // GERÇEK
-  // Continue-with-ad için rewarded ad unit (AdMob panel'inden oluştur):
-  // Test ID: ca-app-pub-3940256099942544/5224354917
+// App ID'ler (platform başına ayrı, AdMob'da kayıtlı):
+//   iOS:     ca-app-pub-6512468206139061~1838126588  (Info.plist'te de aynısı)
+//   Android: ca-app-pub-6512468206139061~6649765876  (AndroidManifest.xml'de de)
+const _IS_IOS = (typeof window!=='undefined' && window.Capacitor?.getPlatform?.()==='ios');
+const ADMOB_CONFIG = _IS_IOS ? {
+  // GERÇEK iOS ad unit'leri (AdMob → iOS app → Ad units)
+  bannerAdUnitId:       'ca-app-pub-6512468206139061/2231475880',
+  // Aşağıdaki ikisi henüz Google TEST — iOS interstitial + rewarded oluşturup yapıştırınca güncelle
+  interstitialAdUnitId: 'ca-app-pub-3940256099942544/4411468910',
+  rewardedAdUnitId:     'ca-app-pub-3940256099942544/1712485313',
+} : {
+  // Android (mevcut — kullanıyorsan ileride iOS gibi platform-specific yap)
+  bannerAdUnitId:       'ca-app-pub-6512468206139061/8805155929',
+  interstitialAdUnitId: 'ca-app-pub-6512468206139061/8805155929',
   rewardedAdUnitId:     'ca-app-pub-3940256099942544/5224354917',
 };
 
